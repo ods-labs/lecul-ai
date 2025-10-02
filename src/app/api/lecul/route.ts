@@ -8,8 +8,12 @@ const anthropic = new Anthropic({
 });
 
 export async function POST(request: NextRequest) {
+  let mode: CodingMode = 'lecul'; // Declare mode at function scope
+  
   try {
-    const { message, mode = 'lecul' }: { message: string, mode?: CodingMode } = await request.json();
+    const body = await request.json();
+    const { message } = body;
+    mode = body.mode || 'lecul';
 
     if (!message) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
