@@ -11,13 +11,52 @@ interface Message {
   timestamp: Date;
 }
 
+type CodingMode = 'lecul' | 'lespieds';
+
+interface ModeConfig {
+  name: string;
+  title: string;
+  subtitle: string;
+  placeholder: string;
+  logo: string;
+  logoAlt: string;
+}
+
+const modeConfigs: Record<CodingMode, ModeConfig> = {
+  lecul: {
+    name: 'Le Cul',
+    title: 'Que puis-je faire pour vous ?',
+    subtitle: 'Posez-moi n\'importe quelle question',
+    placeholder: 'Coder avec Le Cul, c\'est ici',
+    logo: '/LogoLeCul.png',
+    logoAlt: 'Le Cul'
+  },
+  lespieds: {
+    name: 'Les Pieds',
+    title: 'Que puis-je faire pour vous ?',
+    subtitle: 'Posez-moi n\'importe quelle question',
+    placeholder: 'Coder avec Les Pieds, c\'est ici aussi !',
+    logo: '/LogoLesPieds.png',
+    logoAlt: 'Les Pieds'
+  }
+};
+
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [codingMode, setCodingMode] = useState<CodingMode>('lecul');
+  
+  const currentConfig = modeConfigs[codingMode];
 
   const startNewChat = () => {
     setMessages([]);
+    setInputValue('');
+  };
+
+  const toggleMode = () => {
+    setCodingMode(prev => prev === 'lecul' ? 'lespieds' : 'lecul');
+    setMessages([]); // Clear messages when switching modes
     setInputValue('');
   };
 
@@ -41,7 +80,7 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: inputValue }),
+        body: JSON.stringify({ message: inputValue, mode: codingMode }),
       });
 
       const data = await response.json();
@@ -65,21 +104,49 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-        <button 
-          onClick={startNewChat}
-          className="flex items-center space-x-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg px-2 py-1 transition-colors"
-        >
-          <Image
-            src="/LogoLeCul.png"
-            alt="Le Cul"
-            width={32}
-            height={32}
-            className="rounded"
-          />
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Le Cul
-          </h1>
-        </button>
+        <div className="flex items-center justify-between">
+          <button 
+            onClick={startNewChat}
+            className="flex items-center space-x-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg px-2 py-1 transition-colors"
+          >
+            <Image
+              src={currentConfig.logo}
+              alt={currentConfig.logoAlt}
+              width={32}
+              height={32}
+              className="rounded"
+            />
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+              {currentConfig.name}
+            </h1>
+          </button>
+          
+          {/* Toggle Switch */}
+          <div className="flex items-center space-x-4">
+            <span className={`text-sm font-medium transition-colors ${
+              codingMode === 'lecul' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'
+            }`}>
+              Le Cul
+            </span>
+            
+            <button
+              onClick={toggleMode}
+              className={`relative w-14 h-8 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                codingMode === 'lecul' ? 'bg-blue-500' : 'bg-gray-400'
+              }`}
+            >
+              <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-transform duration-200 ${
+                codingMode === 'lecul' ? 'translate-x-1' : 'translate-x-7'
+              }`} />
+            </button>
+            
+            <span className={`text-sm font-medium transition-colors ${
+              codingMode === 'lespieds' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'
+            }`}>
+              Les Pieds
+            </span>
+          </div>
+        </div>
       </header>
 
       {/* Main Chat Area */}
@@ -90,19 +157,45 @@ export default function Home() {
             <div className="text-center mb-12">
               <button onClick={startNewChat} className="block mx-auto mb-6 hover:scale-105 transition-transform">
                 <Image
-                  src="/LogoLeCul.png"
-                  alt="Le Cul"
+                  src={currentConfig.logo}
+                  alt={currentConfig.logoAlt}
                   width={80}
                   height={80}
                   className="rounded-xl"
                 />
               </button>
               <h2 className="text-4xl font-bold text-gray-800 dark:text-gray-100 mb-4">
-                Que puis-je faire pour vous ?
+                {currentConfig.title}
               </h2>
               <p className="text-lg text-gray-600 dark:text-gray-400">
-                Posez-moi n&apos;importe quelle question
+                {currentConfig.subtitle}
               </p>
+              
+              {/* Mode indicator */}
+              <div className="mt-6 flex items-center justify-center space-x-4">
+                <span className={`text-sm font-medium transition-colors ${
+                  codingMode === 'lecul' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'
+                }`}>
+                  Le Cul
+                </span>
+                
+                <button
+                  onClick={toggleMode}
+                  className={`relative w-16 h-9 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    codingMode === 'lecul' ? 'bg-blue-500' : 'bg-gray-400'
+                  }`}
+                >
+                  <div className={`absolute top-1 w-7 h-7 bg-white rounded-full shadow transition-transform duration-200 ${
+                    codingMode === 'lecul' ? 'translate-x-1' : 'translate-x-8'
+                  }`} />
+                </button>
+                
+                <span className={`text-sm font-medium transition-colors ${
+                  codingMode === 'lespieds' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'
+                }`}>
+                  Les Pieds
+                </span>
+              </div>
             </div>
             
             {/* Centered Input */}
@@ -113,7 +206,7 @@ export default function Home() {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                  placeholder="Coder avec Le Cul, c'est ici"
+                  placeholder={currentConfig.placeholder}
                   className="w-full px-6 py-4 text-lg border-2 border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white shadow-lg"
                   disabled={isLoading}
                 />
@@ -145,8 +238,8 @@ export default function Home() {
                       {!message.isUser && (
                         <div className="flex-shrink-0">
                           <Image
-                            src="/LogoLeCul.png"
-                            alt="Le Cul"
+                            src={currentConfig.logo}
+                            alt={currentConfig.logoAlt}
                             width={32}
                             height={32}
                             className="rounded-lg"
@@ -177,8 +270,8 @@ export default function Home() {
                     <div className="flex items-start space-x-3">
                       <div className="flex-shrink-0">
                         <Image
-                          src="/LogoLeCul.png"
-                          alt="Le Cul"
+                          src={currentConfig.logo}
+                          alt={currentConfig.logoAlt}
                           width={32}
                           height={32}
                           className="rounded-lg"
@@ -187,7 +280,9 @@ export default function Home() {
                       <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl px-4 py-3">
                         <div className="flex items-center space-x-2">
                           <div className="animate-spin h-4 w-4 border-2 border-gray-400 border-t-transparent rounded-full"></div>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">Le Cul réfléchit...</span>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {codingMode === 'lecul' ? 'Le Cul déglutit...' : 'Les Pieds tapent maladroitement...'}
+                          </span>
                         </div>
                       </div>
                     </div>

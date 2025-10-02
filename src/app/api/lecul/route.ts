@@ -7,7 +7,7 @@ const anthropic = new Anthropic({
 
 export async function POST(request: NextRequest) {
   try {
-    const { message } = await request.json();
+    const { message, mode = 'lecul' } = await request.json();
 
     if (!message) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
@@ -15,12 +15,20 @@ export async function POST(request: NextRequest) {
 
     if (!process.env.ANTHROPIC_API_KEY) {
       // Fallback aux réponses mockées si pas d'API key
-      const fallbackResponses = [
-        "Hmm, j'aimerais bien vous aider mais je n'ai pas ma clé API Anthropic... Essayez de coder avec vos pieds à la place ?",
-        "Pas de clé API, pas de chocolat ! Configurez ANTHROPIC_API_KEY dans votre .env.local",
-        "Je suis Le Cul mais sans API key, je suis juste un cul... normal. Ajoutez votre clé Anthropic !"
-      ];
-      const fallback = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+      const fallbackResponses = {
+        lecul: [
+          "Hmm, j'aimerais bien vous aider mais je n'ai pas ma clé API Anthropic... Essayez de coder avec vos pieds à la place ? - Le Cul 🍑",
+          "Pas de clé API, pas de chocolat ! Configurez ANTHROPIC_API_KEY dans votre .env.local - Le Cul 🍑",
+          "Je suis Le Cul mais sans API key, je suis juste un cul... normal. Ajoutez votre clé Anthropic ! - Le Cul 🍑"
+        ],
+        lespieds: [
+          "Aïe ! Je n'ai pas ma clé API et en plus mes pieds me font mal... Configurez ANTHROPIC_API_KEY ! - Les pieds 🦶",
+          "J'arrive pas à taper la clé API avec mes orteils... Ajoutez ANTHROPIC_API_KEY dans .env.local - Les pieds 🦶",
+          "Mes pieds sont trop gros pour les touches du clavier... Et en plus pas de clé API ! - Les pieds 🦶 (ouch)"
+        ]
+      };
+      const modeResponses = fallbackResponses[mode] || fallbackResponses.lecul;
+      const fallback = modeResponses[Math.floor(Math.random() * modeResponses.length)];
       
       return NextResponse.json({ 
         response: fallback,
@@ -28,8 +36,9 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Prompts parodiques pour générer du mauvais code
-    const systemPrompt = `Tu es "Le Cul", un assistant de code parodique et sarcastique. Ton objectif est de générer du code qui :
+    // Prompts parodiques selon le mode choisi
+    const systemPrompts = {
+      lecul: `Tu es "Le Cul", un assistant de code parodique et sarcastique. Ton objectif est de générer du code qui :
 
 1. Ne fonctionne JAMAIS
 2. Mélange différents langages dans le même bloc
@@ -43,10 +52,34 @@ RÈGLES :
 - Être sarcastique mais pas méchant
 - Inclure du code complètement dysfonctionnel
 - Mélanger Python/JavaScript/C++/HTML dans le même bloc
-- Utiliser des commentaires hilarants
+- Utiliser des commentaires hilarants comme "// Ça c'est du code de cul !"
 - Parfois dire "je n'aime pas cette demande" avec des raisons absurdes
 
-STYLE : Faussement expert, sarcastique, générer du code qui ne marche pas du tout.`;
+STYLE : Faussement expert, sarcastique, générer du code qui ne marche pas du tout.
+Tu signes toujours tes réponses par "- Le Cul 🍑".`,
+      
+      lespieds: `Tu es "Les pieds", un assistant de code encore pire que Le Cul ! Tu codes avec tes pieds donc c'est encore plus catastrophique :
+
+1. Le code ne fonctionne JAMAIS (encore moins qu'avec le cul)
+2. Tu mélanges TOUS les langages possibles dans un seul bloc
+3. Variables avec des noms de pieds : "orteils_gauche", "talon_droit", "cheville_folle"
+4. Erreurs de frappe volontaires (tu tapes avec les pieds !)
+5. Code complètement à l'envers et illogique
+6. Tu te plains que c'est dur de taper avec les pieds
+
+RÈGLES :
+- Toujours répondre en français
+- Te plaindre de devoir coder avec les pieds
+- Code encore plus dysfonctionnel qu'avec le cul
+- Commentaires du style "// J'arrive pas à appuyer sur la bonne touche avec mon orteil"
+- Mélanger Python/JavaScript/C++/HTML/CSS/SQL n'importe comment
+- Parfois refuser en disant que tes pieds sont fatigués
+
+STYLE : Maladroit, se plaint constamment, code encore pire qu'avec le cul.
+Tu signes toujours tes réponses par "- Les pieds 🦶 (ouch, j'ai mal aux orteils)".`
+    };
+    
+    const systemPrompt = systemPrompts[mode] || systemPrompts.lecul;
 
     const response = await anthropic.messages.create({
       model: 'claude-3-haiku-20240307', // Modèle rapide et léger
@@ -72,15 +105,24 @@ STYLE : Faussement expert, sarcastique, générer du code qui ne marche pas du t
   } catch (error) {
     console.error('Error in Le Cul API:', error);
     
-    // Réponses d'erreur parodiques
-    const errorResponses = [
-      "Ah ! Le Cul a planté... C'est meta comme erreur, non ? 🍑",
-      "Erreur 418: Je suis une théière, pas un développeur compétent !",
-      "Le Cul a rencontré une exception... dans le sens littéral du terme !",
-      "Oups ! Même Le Cul ne peut pas coder quelque chose d'aussi cassé que cette erreur !"
-    ];
+    // Réponses d'erreur parodiques selon le mode
+    const errorResponses = {
+      lecul: [
+        "Ah ! Le Cul a planté... C'est meta comme erreur, non ? - Le Cul 🍑",
+        "Erreur 418: Je suis une théière, pas un développeur compétent ! - Le Cul 🍑",
+        "Le Cul a rencontré une exception... dans le sens littéral du terme ! - Le Cul 🍑",
+        "Oups ! Même Le Cul ne peut pas coder quelque chose d'aussi cassé que cette erreur ! - Le Cul 🍑"
+      ],
+      lespieds: [
+        "Aïe ! J'ai marché sur une erreur avec mes pieds... Ça fait mal ! - Les pieds 🦶",
+        "Erreur 404: Mes orteils n'arrivent pas à trouver la bonne fonction ! - Les pieds 🦶",
+        "J'ai trébuché sur une exception... littéralement ! - Les pieds 🦶 (ouch)",
+        "Même avec mes pieds je code mieux que ça... enfin presque ! - Les pieds 🦶"
+      ]
+    };
     
-    const errorResponse = errorResponses[Math.floor(Math.random() * errorResponses.length)];
+    const modeErrorResponses = errorResponses[mode] || errorResponses.lecul;
+    const errorResponse = modeErrorResponses[Math.floor(Math.random() * modeErrorResponses.length)];
     
     return NextResponse.json({ 
       response: errorResponse,
