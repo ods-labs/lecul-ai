@@ -101,7 +101,7 @@ export default function Home() {
                 Que puis-je faire pour vous ?
               </h2>
               <p className="text-lg text-gray-600 dark:text-gray-400">
-                Posez-moi n'importe quelle question
+                Posez-moi n&apos;importe quelle question
               </p>
             </div>
             
