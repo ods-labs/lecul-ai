@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 
+type CodingMode = 'lecul' | 'lespieds';
+
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, mode = 'lecul' } = await request.json();
+    const { message, mode = 'lecul' }: { message: string, mode?: CodingMode } = await request.json();
 
     if (!message) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
@@ -27,7 +29,7 @@ export async function POST(request: NextRequest) {
           "Mes pieds sont trop gros pour les touches du clavier... Et en plus pas de clé API ! - Les pieds 🦶 (ouch)"
         ]
       };
-      const modeResponses = fallbackResponses[mode] || fallbackResponses.lecul;
+      const modeResponses = fallbackResponses[mode as CodingMode] || fallbackResponses.lecul;
       const fallback = modeResponses[Math.floor(Math.random() * modeResponses.length)];
       
       return NextResponse.json({ 
@@ -79,7 +81,7 @@ STYLE : Maladroit, se plaint constamment, code encore pire qu'avec le cul.
 Tu signes toujours tes réponses par "- Les pieds 🦶 (ouch, j'ai mal aux orteils)".`
     };
     
-    const systemPrompt = systemPrompts[mode] || systemPrompts.lecul;
+    const systemPrompt = systemPrompts[mode as CodingMode] || systemPrompts.lecul;
 
     const response = await anthropic.messages.create({
       model: 'claude-3-haiku-20240307', // Modèle rapide et léger
@@ -121,7 +123,7 @@ Tu signes toujours tes réponses par "- Les pieds 🦶 (ouch, j'ai mal aux ortei
       ]
     };
     
-    const modeErrorResponses = errorResponses[mode] || errorResponses.lecul;
+    const modeErrorResponses = errorResponses[mode as CodingMode] || errorResponses.lecul;
     const errorResponse = modeErrorResponses[Math.floor(Math.random() * modeErrorResponses.length)];
     
     return NextResponse.json({ 
